@@ -13,7 +13,7 @@ class PeminjamanController extends Controller
         $userId = $request->header('Authorization');
 
         if ($userId) {
-            $data = BangunRuang::where('email', $userId)
+            $data = Peminjaman::where('email', $userId)
                 ->orWhereNull('email')
                 ->get()
                 ->map(function ($item) use ($userId) {
@@ -21,7 +21,7 @@ class PeminjamanController extends Controller
                     return $item;
                 });
         } else {
-            $data = BangunRuang::whereNull('email')
+            $data = Peminjaman::whereNull('email')
                 ->get()
                 ->map(function ($item) {
                     $item->mine = 0;
