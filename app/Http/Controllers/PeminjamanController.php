@@ -8,16 +8,34 @@ use Illuminate\Support\Facades\Storage;
 
 class PeminjamanController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $data = Peminjaman::all();
+        $userId = $request->header('Authorization');
+
+        if ($userId) {
+            $data = BangunRuang::where('email', $userId)
+                ->orWhereNull('email')
+                ->get()
+                ->map(function ($item) use ($userId) {
+                    $item->mine = $item->email === $userId ? 1 : 0;
+                    return $item;
+                });
+        } else {
+            $data = BangunRuang::whereNull('email')
+                ->get()
+                ->map(function ($item) {
+                    $item->mine = 0;
+                    return $item;
+                });
+        }
+
         return response()->json($data);
     }
 
     public function store(Request $request)
     {
         $email = $request->header('Authorization'); // <- ambil dari header
-        // if($email){
+        if($email){
             $request->validate([
                 'nama' => 'required|string|max:255',
                 'gambar' => 'required|image|mimes:jpg,jpeg,png|max:2048',
@@ -34,7 +52,10 @@ class PeminjamanController extends Controller
                 'status' => 'success',
                 'message' => 'Data berhasil ditambahkan.'
             ]);
-        // }
+        }
+        return response()->json([
+                'message' => 'Login terlebih dahulu.'
+            ]);
     }
 
     public function update(Request $request, $id)
